@@ -1,0 +1,222 @@
+<?php
+session_start();
+// Database connection setup (replace with your database configuration)
+$servername = "localhost";
+$db_username = "root";
+$db_password = "";
+$dbname = "polyclinic";
+
+// Create a database connection
+$conn = new mysqli($servername, $db_username, $db_password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming $username is obtained from the URL as in your code
+$username = $_SESSION['username'];
+$doctorName = $_SESSION['doctorName'];
+
+// SQL query to fetch data from the appointments table for a specific username
+$sql = "SELECT * FROM appointments WHERE doctorName = '$doctorName'";
+
+// Execute the query
+$result = $conn->query($sql);
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Client History</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous" />
+  <style>
+    .navcolor {
+      background-color: white;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: #f5f5f5;
+      cursor: pointer;
+    }
+
+    .navbar .navbar-brand {
+      padding: 0;
+      font-size: 25px;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      margin-right: 20px;
+
+    }
+
+    .navbar .navbar-brand h4 {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .navbar .nav-item {
+      margin-right: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      padding-right: 22px;
+      padding-left: 22px;
+      font-family: "Poppins", sans-serif;
+    }
+
+
+    .nav-item :hover {
+      color: blue;
+    }
+
+    .gradient-custom-2 {
+      background-color: #dbf26e;
+      background-image: linear-gradient(319deg,
+          #b4c369 0%,
+          #4ec65c 35%,
+          #37ac98 80%);
+    }
+
+    .btn-outline-success:hover {
+      background-color: #dbf26e;
+      background-image: linear-gradient(319deg,
+          #b4c369 0%,
+          #4ec65c 35%,
+          #37ac98 80%);
+    }
+
+
+
+    @media (min-width: 768px) {
+      .gradient-form {
+        height: auto !important;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .gradient-custom-2 {
+        border-top-right-radius: 0.3rem;
+        border-bottom-right-radius: 0.3rem;
+      }
+    }
+
+    @media screen and (min-width: 992px) {
+      .nav-item {
+        line-height: 50px;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+  <header>
+    <!-- place navbar here -->
+    <nav class="navbar  navbar-expand-md navbar-light bg-light m-0 p-0">
+      <div class="container my-0">
+        <a class="navbar-brand" href="#">
+          Guardians
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html"><strong>Home</strong></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="DoctorPage.php?username=<?php echo $username; ?>"><strong>Doctor
+                  Page</strong></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                href="DoctorProfile.php?username=<?php echo $username; ?>"><strong>Profile</strong></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                href="ScheduleForm.php?username=<?php echo $username; ?>"><strong>Schedule</strong></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"
+                href="DoctorPage.php?username=<?php echo $username; ?>&doctorName=<?php echo $doctorName; ?>"><strong>Appointments</strong></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Logout.php"><strong>Logout</strong></a>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <div class="container mt-4">
+      <center>
+        <h2>Client History</h2>
+      </center>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Sr.No</th>
+            <th>Name</th>
+            <th>Appointment Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          // Check if there are any appointments for the user
+          if ($result->num_rows > 0) {
+            $counter = 1;
+            while ($row = $result->fetch_assoc()) {
+              if ($row['status'] == 'yes') {
+                $patientName = $row['patientName'];
+                $appointmentDate = $row['appointment_date'];
+                echo "<tr>";
+                echo "<td>$counter</td>";
+                echo "<td>$patientName</td>";
+                echo "<td>$appointmentDate</td>";
+                echo '<td>';
+                echo '<a class="btn btn-outline-danger btn-block fa-lg" type="button" href="deletehistory.php?username=' . $row['patientName'] . '">Delete</a>';
+                echo '<a class="btn btn-outline-primary btn-block fa-lg mx-3 " type="button" href="PrescriptionPdf.php?username=' . $row['patientName'] . '">Generate PDF</a>';
+                echo '</td>';
+                echo "</tr>";
+                $counter++;
+              }
+            }
+          } else {
+            echo "<tr><td colspan='3'>No appointments found.</td></tr>";
+          }
+          ?>
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <footer>
+    <!-- place footer here -->
+  </footer>
+  <!-- Bootstrap JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+    crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+    integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
+
+<?php
+// Close the database connection
+$conn->close();
+?>
